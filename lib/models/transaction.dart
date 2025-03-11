@@ -49,15 +49,34 @@ class Transaction {
 
   // Create Transaction from storage Map
   factory Transaction.fromMap(Map<String, dynamic> map) {
+    DateTime dateTime;
+    
+    // Handle different date formats
+    if (map['date'] is int) {
+      // If date is stored as timestamp (milliseconds since epoch)
+      dateTime = DateTime.fromMillisecondsSinceEpoch(map['date']);
+    } else if (map['date'] is String) {
+      // If date is stored as ISO8601 string
+      try {
+        dateTime = DateTime.parse(map['date']);
+      } catch (e) {
+        // Fallback to current date if parsing fails
+        dateTime = DateTime.now();
+      }
+    } else {
+      // Default to current date if date is missing or in unknown format
+      dateTime = DateTime.now();
+    }
+    
     return Transaction(
-      id: map['id'],
-      date: DateTime.parse(map['date']),
-      amount: map['amount'],
-      type: map['type'],
-      account: map['account'],
-      description: map['description'],
-      merchantName: map['merchantName'],
-      category: map['category'],
+      id: map['id'] ?? '',
+      date: dateTime,
+      amount: (map['amount'] is int) ? (map['amount'] as int).toDouble() : (map['amount'] ?? 0.0),
+      type: map['type'] ?? 'debit',
+      account: map['account'] ?? 'Unknown',
+      description: map['description'] ?? '',
+      merchantName: map['merchantName'] ?? 'Unknown',
+      category: map['category'] ?? 'Uncategorized',
     );
   }
 } 
